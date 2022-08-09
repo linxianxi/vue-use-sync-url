@@ -2,7 +2,7 @@
   <p>存储复杂值到 url</p>
   <p>obj: {{ JSON.stringify(values.obj) }}</p>
 
-  <el-button @click="setObj">设置 obj 为比较复杂的对象值</el-button>
+  <el-input v-model="values.obj.a.b.c" />
   <el-button @click="onSubmit">搜索</el-button>
 </template>
 
@@ -12,12 +12,8 @@ import useSyncUrl from "../../lib";
 
 // 各个控件的值
 const values = reactive<{ obj: any }>({
-  obj: null,
+  obj: { a: { b: { c: "1" } } },
 });
-
-const setObj = () => {
-  values.obj = { a: { b: { c: true } } };
-};
 
 const { syncToUrl } = useSyncUrl({
   configs: [
@@ -28,7 +24,6 @@ const { syncToUrl } = useSyncUrl({
     },
   ],
   onDecode: (params) => {
-    console.log("params", params);
     Object.keys(params).forEach((key) => {
       (values as any)[key] = params[key];
     });
