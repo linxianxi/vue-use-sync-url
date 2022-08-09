@@ -5,8 +5,10 @@ import "element-plus/dist/index.css";
 
 import { createRouter, createWebHistory } from "vue-router";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const router = createRouter({
-  history: createWebHistory("/vue-use-sync-url"),
+  history: createWebHistory(isProd ? "/vue-use-sync-url" : undefined),
   routes: [
     {
       path: "/",

@@ -19,12 +19,13 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && tsc -p tsconfig.build.json",
     "preview": "vite preview",
-    "build-src": "vite build --config gh-pages.config.js",
+    "postbuild": "vite build --config gh-pages.config.js && cp dist/index.html dist/404.html",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write ./**/*.{vue,ts,tsx,js,jsx,css,less,scss,json,md}"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.182",
+    "@types/node": "^18.6.5",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "@vitejs/plugin-vue": "^3.0.0",
