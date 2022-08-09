@@ -260,6 +260,10 @@ interface useSyncUrlConfig {
 }
 
 interface useSyncUrlOptions {
+  /**
+   * @default "history"
+   */
+  mode?: "history" | "hash";
   configs: useSyncUrlConfig[];
   onDecode: (params: Record<string, any>, isPopState: boolean) => void;
 }
