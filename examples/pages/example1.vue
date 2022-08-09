@@ -97,14 +97,8 @@ const { searchParams, syncToUrl } = useSyncUrl({
     Object.keys(params).forEach((key) => {
       (values as any)[key] = params[key];
     });
-    if (isPopState) {
-      // 浏览器前进回退，请求数据
-    }
+    // 在这里请求数据
   },
-});
-
-onMounted(() => {
-  // 首次请求数据
 });
 
 // 切换页码

@@ -1,5 +1,7 @@
 ## vue-use-sync-url
 
+[测试地址](https://linxianxi.github.io/vue-use-sync-url/)
+
 ## Introduce
 
 在后台的列表页中，经常需要保存筛选条件和当前页码等数据，并在页面刷新、从详情页返回列表页时，保持之前的筛选条件。此库可以帮助你将筛选值同步到 url 参数，并在页面第一次加载时或浏览器前进后退时将 url 的值同步到你的筛选控件中。
@@ -90,21 +92,14 @@ const { searchParams, syncToUrl } = useSyncUrl({
         Object.key(params).forEach(key => {
             values[key] = params[key]
         });
+
+        // 在这里获取数据
+
         //  由浏览器前进回退触发
         if(isPopstate) {
-            getData();
+
         }
     },
-});
-
-// 获取列表数据
-const getData = () => {
-    ...
-}
-
-// 初始获取列表数据，这里 onDecode 已经执行完成
-onMounted(() => {
-    getData();
 });
 
 const handleSearch = () => {
@@ -157,7 +152,7 @@ const { syncToUrl } = useSyncUrl({
 
 **decode**
 
-自定义将 url 参数转换成组件值的方法。第一个参数的值为 url 上 key 的值。如果设置了 [encodeKeys](#encodeKeys)，则第一个参数为其对象值。
+自定义将 url 参数转换成组件值的方法。第一个参数的值为 url 上 key 的值。如果设置了 [decodeKeys](#decodeKeys)，则第一个参数为其对象值。
 
 **encode**
 
@@ -203,20 +198,20 @@ const { syncToUrl } = useSyncUrl({
 }
 ```
 
-<span id="encodeKeys">**encodeKeys**</span>
+<span id="decodeKeys">**decodeKeys**</span>
 
-若 `encode` 返回的是对象，需要设置 `encodeKeys` 为返回对象的 key 值数组。这样 `decode` 的第一个参数才会解析成返回对象，否为会返回设置的 key 的值。
+若 `encode` 返回的是对象，需要设置 `decodeKeys` 为返回对象的 key 值数组。这样 `decode` 的第一个参数才会解析成返回对象，否为会返回设置的 key 的值。
 
 ```js
 {
   key: "test",
-  encodeKeys: ["a", "b"],
+  decodeKeys: ["a", "b"],
   encode: (value: string[]) => ({
     a: value[0],
     b: value[1],
   }),
   decode: (value) => {
-    // value 为 url 参数中 encodeKeys 的对象值 { a: "1", b: "2" }，如果 url 参数中 没有则为空对象 {}
+    // value 为 url 参数中 decodeKeys 的对象值 { a: "1", b: "2" }，如果 url 参数中 没有则为空对象 {}
     ...
   }
 }

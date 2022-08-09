@@ -6,7 +6,7 @@ import "element-plus/dist/index.css";
 import { createRouter, createWebHistory } from "vue-router";
 
 export const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory("/vue-use-sync-url"),
   routes: [
     {
       path: "/",

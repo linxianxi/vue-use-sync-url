@@ -1,4 +1,4 @@
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 import { usePopStateListener } from "./usePopStateListener";
 import { isObj } from "./utils";
 
@@ -91,8 +91,11 @@ export const useSyncUrl = (options: useSyncUrlOptions) => {
   const initial = read();
   if (initial.keys().next().value) {
     write(initial);
-    handleDecode(false);
   }
+
+  onMounted(() => {
+    handleDecode(false);
+  });
 
   usePopStateListener(() => {
     write(read());

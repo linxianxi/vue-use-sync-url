@@ -33,7 +33,6 @@ const { syncToUrl } = useSyncUrl({
     },
   ],
   onDecode: (params, isPopState) => {
-    // 首次加载，将 url 上的值赋到组件中
     Object.keys(params).forEach((key) => {
       (values as any)[key] = params[key];
     });
