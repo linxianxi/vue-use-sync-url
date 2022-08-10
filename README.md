@@ -104,7 +104,9 @@ const { searchParams, syncToUrl } = useSyncUrl({
 
 const handleSearch = () => {
     syncToUrl(values);
-    // 存储到 storage，从详情页跳转到列表时可以取出来传入 vue-router 的 query 参数进行跳转
+     // 存储到 storage，使用 router.push(`/example1${localStorage.getItem("search")}`)
+    localStorage.setItem("search", window.location.search);
+    // 或存储 searchParams router.push({ path: "/example1", query: JSON.parse(localStorage.getItem("search")) })
     localStorage.setItem("search", JSON.stringify(searchParams));
 }
 </script>

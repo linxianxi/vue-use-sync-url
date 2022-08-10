@@ -104,15 +104,11 @@ const { searchParams, syncToUrl } = useSyncUrl({
 // 切换页码
 const onPageChange = () => {
   syncToUrl(values);
-  // 在你想存储的地方执行
-  localStorage.setItem("searchParams", JSON.stringify(searchParams));
 };
 
 // 点击按钮
 const onSubmit = () => {
   syncToUrl(values);
-  // 在你想存储的地方执行
-  localStorage.setItem("searchParams", JSON.stringify(searchParams));
 };
 
 const options = [
