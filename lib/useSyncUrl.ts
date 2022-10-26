@@ -93,9 +93,7 @@ export const useSyncUrl = (options: useSyncUrlOptions) => {
     write(initial);
   }
 
-  onMounted(() => {
-    handleDecode(false);
-  });
+  handleDecode(false);
 
   usePopStateListener(() => {
     write(read());
