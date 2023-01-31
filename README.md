@@ -46,7 +46,7 @@ searchParams.get(b);
 
 这里使用 `element-plus` 的组件做例子
 
-```js
+```vue
 <script setup>
 import { reactive, onMounted } from "vue";
 import useSyncUrl from "vue-use-sync-url";
