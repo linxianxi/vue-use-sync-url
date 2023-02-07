@@ -19,12 +19,11 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && tsc -p tsconfig.build.json",
     "preview": "vite preview",
-    "build-examples": "vite build --config gh-pages.config.js && cp dist/index.html dist/404.html",
+    "build-examples": "vite build --config gh-pages.config.js",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write ./**/*.{vue,ts,tsx,js,jsx,css,less,scss,json,md}"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.182",
     "@types/node": "^18.6.5",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
@@ -34,12 +33,14 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-vue": "^9.3.0",
-    "lodash": "^4.17.21",
     "prettier": "^2.7.1",
     "typescript": "^4.6.4",
     "vite": "^3.0.0",
     "vue": "^3.2.37",
-    "vue-router": "^4.1.3",
+    "vue-router": "^4.1.6",
     "vue-tsc": "^0.38.4"
+  },
+  "peerDependencies": {
+    "vue-router": ">=4.0.0"
   }
 }

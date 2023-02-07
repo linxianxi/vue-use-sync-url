@@ -5,4 +5,11 @@ import vue from "@vitejs/plugin-vue";
 export default defineConfig({
   plugins: [vue()],
   base: "/vue-use-sync-url/",
+  build: {
+    rollupOptions: {
+      output: {
+        dir: "dist-examples",
+      },
+    },
+  },
 });
