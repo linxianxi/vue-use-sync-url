@@ -37,7 +37,6 @@ yarn add vue-use-sync-url
 | omitEmptyString | encode 时，值为空字符串 `""` 时是否忽略                                                                                        | boolean                                                                                                        | true   |
 | omitNull        | encode 时，值为 null 时是否忽略                                                                                                | boolean                                                                                                        | true   |
 | omitUndefined   | encode 时，值为 undefined 时是否忽略                                                                                           | boolean                                                                                                        | true   |
-| false           |
 
 ## Usage
 
