@@ -1,180 +1,150 @@
-import { onMounted, reactive } from "vue";
 import { usePopStateListener } from "./usePopStateListener";
 import { isObj } from "./utils";
+import { useRoute, useRouter } from "vue-router";
+import { EncodeResult, ExtraValues, useSyncUrlOptions } from "./type";
 
-type EncodeResult = string | number | boolean | (string | number | boolean)[];
-
-interface useSyncUrlConfig {
-  key: string;
-  decodeKeys?: string[];
-  omitEmptyString?: boolean;
-  omitUndefined?: boolean;
-  omitNull?: boolean;
-  decode?: (value: any) => any;
-  encode?: (value: any) => EncodeResult | Record<string, EncodeResult>;
-}
-
-interface useSyncUrlOptions {
-  mode?: "history" | "hash";
-  configs: useSyncUrlConfig[];
-  onDecode: (params: Record<string, any>, isPopState: boolean) => void;
-}
-
-export const useSyncUrl = (options: useSyncUrlOptions) => {
-  const { mode = "history", configs, onDecode } = options;
-
-  const searchParams: Record<string, string[] | string> = reactive({});
-
-  function getRawParams() {
-    if (mode === "history") {
-      return window.location.search || "";
-    }
-    const hash = window.location.hash || "";
-    const index = hash.indexOf("?");
-    return index > 0 ? hash.slice(index) : "";
-  }
-
-  function constructQuery(params: URLSearchParams) {
-    const stringified = params.toString();
-
-    if (mode === "history")
-      return `${stringified ? `?${stringified}` : ""}${location.hash || ""}`;
-    const hash = window.location.hash || "#";
-    const index = hash.indexOf("?");
-    if (index > 0)
-      return `${hash.slice(0, index)}${stringified ? `?${stringified}` : ""}`;
-    return `${hash}${stringified ? `?${stringified}` : ""}`;
-  }
-
-  function read() {
-    return new URLSearchParams(getRawParams());
-  }
-
-  function write(params: URLSearchParams) {
-    const unusedKeys = new Set(Object.keys(searchParams));
-    for (const key of params.keys()) {
-      const paramsForKey = params.getAll(key);
-      searchParams[key] =
-        paramsForKey.length > 1 ? paramsForKey : params.get(key) || "";
-      unusedKeys.delete(key);
-    }
-    Array.from(unusedKeys).forEach((key) => delete searchParams[key]);
-  }
+export const useSyncUrl = ({ configs, onDecodeSuccess }: useSyncUrlOptions) => {
+  const route = useRoute();
+  const router = useRouter();
 
   const handleDecode = (isPopState: boolean) => {
-    const result: Record<string, any> = {};
+    const searchParams = new URL(location.href).searchParams;
+    const allParams: Record<string, string | string[]> = {};
+    for (const key of searchParams.keys()) {
+      const paramsForKey = searchParams.getAll(key);
+      allParams[key] =
+        paramsForKey.length > 1 ? paramsForKey : searchParams.get(key) || "";
+    }
     configs.forEach((config) => {
-      if (config.decode) {
-        if (config.decodeKeys) {
-          const keys = Object.keys(searchParams).filter((key) =>
-            config.decodeKeys?.includes(key)
-          );
-          if (keys.length) {
-            keys.forEach((key) => {
-              result[key] = searchParams[key];
-            });
-          }
-        } else {
-          if (config.key in searchParams) {
-            result[config.key] = config.decode(searchParams[config.key]);
-          }
-        }
+      const params = searchParams.getAll(config.name);
+      if (params.length > 1) {
+        config.decode(params, allParams, isPopState);
       } else {
-        if (config.key in searchParams) {
-          result[config.key] = searchParams[config.key];
-        }
+        const value = searchParams.get(config.name);
+        config.decode(value, allParams, isPopState);
       }
     });
-    onDecode(result, isPopState);
+
+    onDecodeSuccess?.(isPopState);
   };
 
-  const initial = read();
-  if (initial.keys().next().value) {
-    write(initial);
-  }
+  const setSearchParams = (
+    searchParams: URLSearchParams,
+    name: string,
+    value: EncodeResult,
+    omitEmptyString = true,
+    omitNull = true,
+    omitUndefined = true
+  ) => {
+    if (Array.isArray(value)) {
+      value.forEach((value) => {
+        if (typeof value === "object" && value !== null) {
+          throw new Error("please check type");
+        }
+        searchParams.append(name, String(value));
+      });
+    } else {
+      if (typeof value === "object" && value !== null) {
+        throw new Error("please check type");
+      }
+
+      if (value === "") {
+        if (omitEmptyString) {
+          searchParams.delete(name);
+        } else {
+          searchParams.set(name, value);
+        }
+      } else if (value === null) {
+        if (omitNull) {
+          searchParams.delete(name);
+        } else {
+          searchParams.set(name, String(value));
+        }
+      } else if (value === undefined) {
+        if (omitUndefined) {
+          searchParams.delete(name);
+        } else {
+          searchParams.set(name, String(value));
+        }
+      } else {
+        searchParams.set(name, String(value));
+      }
+    }
+  };
+
+  const syncToUrl = (extraValues?: ExtraValues) => {
+    const url = new URL(location.href);
+
+    configs.forEach(
+      ({ name, encode, omitEmptyString, omitNull, omitUndefined }) => {
+        const encodeRes = encode();
+        if (isObj(encodeRes)) {
+          if (!Object.keys(encodeRes as Record<string, EncodeResult>).length) {
+            url.searchParams.delete(name);
+            return;
+          }
+          Object.keys(encodeRes as Record<string, EncodeResult>).forEach(
+            (name) => {
+              setSearchParams(
+                url.searchParams,
+                name,
+                (encodeRes as Record<string, EncodeResult>)[name],
+                omitEmptyString,
+                omitNull,
+                omitUndefined
+              );
+            }
+          );
+        } else {
+          setSearchParams(
+            url.searchParams,
+            name,
+            encodeRes as EncodeResult,
+            omitEmptyString,
+            omitNull,
+            omitUndefined
+          );
+        }
+      }
+    );
+
+    if (extraValues) {
+      if (Array.isArray(extraValues)) {
+        extraValues.forEach(
+          ({ name, value, omitEmptyString, omitNull, omitUndefined }) => {
+            setSearchParams(
+              url.searchParams,
+              name,
+              value,
+              omitEmptyString,
+              omitNull,
+              omitUndefined
+            );
+          }
+        );
+      } else {
+        const names = Object.keys(extraValues);
+        if (names.length) {
+          names.forEach((name) => {
+            setSearchParams(url.searchParams, name, extraValues[name]);
+          });
+        }
+      }
+    }
+
+    if (location.search !== url.search) {
+      // vue-router bug, can not use history.pushState
+      // https://github.com/vuejs/router/issues/1678
+      // history.pushState({}, "", url.toString());
+      router.push(route.path + url.search);
+    }
+  };
 
   handleDecode(false);
 
   usePopStateListener(() => {
-    write(read());
     handleDecode(true);
   });
 
-  const syncToUrl = (searchValues: Record<string, any>) => {
-    const params = new URLSearchParams("");
-    configs.forEach((config) => {
-      const key = config.key;
-      const mapEntry = searchValues[key];
-      if (config.encode) {
-        const transformRes = config.encode(mapEntry);
-        if (isObj(transformRes)) {
-          Object.keys(transformRes).forEach((_key) => {
-            const value = (transformRes as Record<string, EncodeResult>)[_key];
-            if (Array.isArray(value)) {
-              value.forEach((val) => params.append(key, String(val)));
-            } else {
-              params.set(_key, String(value));
-            }
-          });
-        } else {
-          if (Array.isArray(transformRes)) {
-            transformRes.forEach((value) => params.append(key, String(value)));
-          } else {
-            params.set(key, String(transformRes));
-          }
-        }
-      } else {
-        if (Array.isArray(mapEntry)) {
-          mapEntry.forEach((value) => {
-            if (typeof value === "object" && mapEntry !== null) {
-              throw new Error("please check your type or use encode");
-            }
-            params.append(key, value);
-          });
-        } else {
-          if (typeof mapEntry === "object" && mapEntry !== null) {
-            throw new Error("please check your type or use encode");
-          }
-          const omitEmptyString = config.omitEmptyString ?? true;
-          const omitNull = config.omitNull ?? true;
-          const omitUndefined = config.omitUndefined ?? true;
-          if (mapEntry === "") {
-            !omitEmptyString && params.set(key, mapEntry);
-          } else if (mapEntry === null) {
-            !omitNull && params.set(key, mapEntry);
-          } else if (mapEntry === undefined) {
-            !omitUndefined && params.set(key, mapEntry);
-          } else {
-            params.set(key, mapEntry);
-          }
-        }
-      }
-    });
-
-    // otherParams
-    Object.keys(searchParams).forEach((key) => {
-      if (!configs.some((config) => config.key === key)) {
-        const mapEntry = searchParams[key];
-        if (Array.isArray(mapEntry)) {
-          mapEntry.forEach((value) => params.append(key, value));
-        } else {
-          params.set(key, mapEntry);
-        }
-      }
-    });
-
-    write(params);
-    const search = constructQuery(params);
-    const previousSearch =
-      mode === "history" ? window.location.search : window.location.hash;
-    if (previousSearch !== search) {
-      window.history.pushState(
-        window.history.state,
-        window.document.title,
-        window.location.pathname + search
-      );
-    }
-  };
-
-  return { searchParams, syncToUrl };
+  return syncToUrl;
 };

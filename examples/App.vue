@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import { router } from "./main.js";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
+
+const route = useRoute();
 
 const menus = [
-  { path: "/example1", label: "example1" },
-  { path: "/example2", label: "example2" },
-  { path: "/example3", label: "example3" },
+  { path: "/base", label: "base" },
+  { path: "/other", label: "other" },
 ];
-const defaultActive = window.location.pathname;
-const onSelect = (index: string) => {
-  router.push(menus.find((i) => i.path === index)?.path as string);
-};
+
+const activePath = computed(() => {
+  return route.path;
+});
 </script>
 
 <template>
   <div class="layout">
-    <el-menu class="menu" :default-active="defaultActive" @select="onSelect">
+    <el-menu class="menu" :router="true" :default-active="activePath">
       <el-menu-item v-for="menu in menus" :key="menu.path" :index="menu.path">{{
         menu.label
       }}</el-menu-item>

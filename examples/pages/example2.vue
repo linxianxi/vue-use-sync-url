@@ -1,45 +1,52 @@
 <template>
-  <p>将值拆分成两个不同名称的键值对存储</p>
+  <p>将值拆分成两个不同名称的键值对存储，encode 无值时也需要返回对应的 key</p>
   <div class="controls">
-    <el-date-picker v-model="values.rangeDate" type="daterange" />
+    <el-date-picker v-model="rangeDate" type="daterange" />
     <el-button @click="onSubmit">提交</el-button>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { reactive } from "vue";
+import { ref } from "vue";
 import useSyncUrl from "../../lib";
 
-const values = reactive({
-  rangeDate: "",
-});
+const rangeDate = ref<string | [Date, Date]>("");
 
-const { syncToUrl } = useSyncUrl({
+const syncToUrl = useSyncUrl({
   configs: [
     {
-      key: "rangeDate",
-      decodeKeys: ["startDate", "endDate"],
-      encode: (value: Date[]) => {
+      name: "rangeDate",
+      encode: () => {
+        if (rangeDate.value) {
+          return {
+            startDate: new Date(rangeDate.value[0]).toISOString(),
+            endDate: new Date(rangeDate.value[1]).toISOString(),
+          };
+        }
+        // url 上清空
         return {
-          startDate: value[0].toISOString(),
-          endDate: value[1].toISOString(),
+          startDate: undefined,
+          endDate: undefined,
         };
       },
-      decode: (value) => {
-        return {
-          rangeDate: [value.startDate, value.endDate],
-        };
+      decode: (value, allValues) => {
+        if (allValues.startDate && allValues.endDate) {
+          rangeDate.value = [
+            new Date(allValues.startDate as string),
+            new Date(allValues.endDate as string),
+          ];
+        } else {
+          rangeDate.value = "";
+        }
       },
     },
   ],
-  onDecode: (params, isPopState) => {
-    Object.keys(params).forEach((key) => {
-      (values as any)[key] = params[key];
-    });
+  onDecodeSuccess: (isPopstate) => {
+    console.log("onDecodeSuccess", "isPopstate:", isPopstate);
   },
 });
 
 const onSubmit = () => {
-  syncToUrl(values);
+  syncToUrl();
 };
 </script>

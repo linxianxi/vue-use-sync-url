@@ -5,26 +5,22 @@ import "element-plus/dist/index.css";
 
 import { createRouter, createWebHistory } from "vue-router";
 
-const isProd = process.env.NODE_ENV === "production";
-
 export const router = createRouter({
-  history: createWebHistory(isProd ? "/vue-use-sync-url" : undefined),
+  history: createWebHistory(
+    import.meta.env.PROD ? "/vue-use-sync-url" : undefined
+  ),
   routes: [
     {
       path: "/",
-      redirect: "/example1",
+      redirect: "/base",
     },
     {
-      path: "/example1",
+      path: "/base",
       component: () => import("./pages/example1.vue"),
     },
     {
-      path: "/example2",
+      path: "/other",
       component: () => import("./pages/example2.vue"),
-    },
-    {
-      path: "/example3",
-      component: () => import("./pages/example3.vue"),
     },
   ],
 });
