@@ -19,7 +19,7 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && tsc -p tsconfig.build.json",
     "preview": "vite preview",
-    "build-examples": "vite build --config gh-pages.config.js",
+    "build-examples": "vite build --config gh-pages.config.js && cp dist-examples/index.html dist-examples/404.html",
     "lint": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write ./**/*.{vue,ts,tsx,js,jsx,css,less,scss,json,md}"
   },
